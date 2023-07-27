@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  # 1) sbt
+  # .sbt, .ivy2 and .m2 cache directories
+  sbt:
+    build:
+      context: ./
+    image: sbt
+    container_name: sbt
+    volumes:
+      - ~/.sbt:/root/.sbt
+      - ~/.ivy2:/root/.ivy2
+      - ~/.m2:/root/.m2
+  # 2) PostgreSQL (Instead of Snowflake)
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      PGPASSWORD: password
+      POSTGRES_DB: sample
+      TZ: "Asia/Tokyo"
+    ports:
+      - 5431:5432
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
+  # 3) Flink
+  jobmanager:
+    image: flink:latest
+    hostname: jobmanager
+    container_name: jobmanager
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    volumes:
+      - /host/path/to/job/artifacts:/opt/flink/usrlib
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        parallelism.default: 2        
+  task_manager:
+    image: flink:latest
+    container_name: task_manager
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    scale: 1
+    volumes:
+      - /host/path/to/job/artifacts:/opt/flink/usrlib
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        parallelism.default: 2
+volumes:
+  postgres:
+    name: v_postgres
