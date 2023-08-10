@@ -2,12 +2,16 @@
 ```
 Flink -> PostgreSQL
 ```
+
 ## Folder structure
 ```
 ├── build.sbt
 ├── compose.yml ... Docker compose file
 ├── init-db
-│   └── init.sql ... SQL to initialize DB 
+│   └── init.sql ... SQL to initialize DB
+├── init-pgadmin
+│   ├── pgpass ... pgpass to access PostgreSQL
+│   └── servers.json ... Info for PgAdmin to access PostgreSQL
 ├── input
 │   └── word.txt ... Input file
 └── src
@@ -17,7 +21,8 @@ Flink -> PostgreSQL
         └── scala
             └── dk.com.HelloFlinkPostgre.scala ... Flink code
 ```
-## Abut Flink application
+
+## About Flink application
 
 A Flink application project using Scala and SBT.
 
@@ -41,6 +46,17 @@ See also [here](#appendix-A)
 ```
 sudo docker compose up -d
 ```
+## To run
+```
+sbt run
+```
+## To check data in PostgreSQL
+
+1. Open http://localhost:18081/ using your browser
+2. Input login parameters and press login button
+* Email Andree/Username: demo@sample.com
+* Password: password
+
 ## To Clean-up
 ```
 sudo docker compose down
