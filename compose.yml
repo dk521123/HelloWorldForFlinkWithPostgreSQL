@@ -16,6 +16,7 @@ services:
   postgres:
     image: postgres:latest
     container_name: postgres
+    hostname: postgresql
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -26,7 +27,24 @@ services:
     ports:
       - 5431:5432
     volumes:
+      - volume_postgres:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    hostname: pgadmin
+    restart: always
+    ports:
+      - 18080:80
+    volumes:
+      - volume_pgadmin:/var/lib/pgadmin
+      - ./init-pgadmin/servers.json:/pgadmin4/servers.json # preconfigured servers/connections
+      - ./init-pgadmin/pgpass:/pgpass # passwords for the connections in this file
+    environment:
+      PGADMIN_DEFAULT_EMAIL: demo@sample.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    depends_on:
+      - postgres
   # 3) Flink
   jobmanager:
     image: flink:latest
@@ -58,5 +76,7 @@ services:
         taskmanager.numberOfTaskSlots: 2
         parallelism.default: 2
 volumes:
-  postgres:
+  volume_postgres:
     name: v_postgres
+  volume_pgadmin:
+    name: v_pgadmin
